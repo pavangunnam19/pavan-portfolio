@@ -54,11 +54,12 @@ function Portfolio() {
         e.preventDefault();
         setFormStatus('Sending...');
 
+        // --- UPDATED with your new Service ID ---
         emailjs.sendForm(
-            'service_u668cno',
-            'template_vzp6e2h',
+            'service_48qjaaw',    // Your new Service ID
+            'template_vzp6e2h',   // Your Template ID
             form.current,
-            'OVytPckOL804VhsgD'
+            'OVytPckOL804VhsgD'     // Your Public Key
         )
         .then((result) => {
             console.log(result.text);
