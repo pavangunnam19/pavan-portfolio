@@ -16,7 +16,7 @@ A premium, production-ready developer portfolio built with **Vite + React + Type
 | Motion       | Framer Motion 10 |
 | Icons        | lucide-react (+ inline brand SVGs) |
 | Fonts        | Self-hosted Sora + Inter via `@fontsource` |
-| Contact      | EmailJS (env-configured, mailto fallback) |
+| Contact      | Web3Forms (env-configured, mailto fallback) |
 | Hosting      | Vercel (SPA) |
 
 ## Getting started
@@ -32,15 +32,13 @@ npm run preview    # preview the production build
 
 ## Environment variables
 
-The contact form uses [EmailJS](https://www.emailjs.com/). Copy `.env.example` to `.env` and fill in:
+The contact form uses [Web3Forms](https://web3forms.com) — free, no account/dashboard. Enter your email at web3forms.com to instantly receive an **access key**, then copy `.env.example` to `.env` and fill in:
 
 ```
-VITE_EMAILJS_SERVICE_ID=...
-VITE_EMAILJS_TEMPLATE_ID=...
-VITE_EMAILJS_PUBLIC_KEY=...
+VITE_WEB3FORMS_KEY=your-access-key
 ```
 
-The EmailJS template should expose `user_name`, `user_email`, and `message` variables. **If these are unset, the form gracefully falls back to opening the visitor's mail client** (`mailto:`), so the site never ships a broken form.
+The key is public by design (it only permits sending to your verified inbox), so it's safe in the client bundle or committed to Vercel env. Web3Forms emails you a neatly-formatted message automatically; a hidden honeypot field filters spam. **If the key is unset, the form gracefully falls back to opening the visitor's mail client** (`mailto:`), so the site never ships a broken form.
 
 ## Project structure
 
@@ -82,7 +80,7 @@ Tokens are defined once as CSS variables in [`src/index.css`](src/index.css) (co
 ## Deployment (Vercel)
 
 1. Push to GitHub and import the repo in Vercel (framework preset: **Vite**).
-2. Add the three `VITE_EMAILJS_*` environment variables in Vercel project settings.
+2. Add the `VITE_WEB3FORMS_KEY` environment variable in Vercel project settings.
 3. Deploy. [`vercel.json`](vercel.json) already handles SPA routing (rewrites all paths to `index.html`).
 
 > **Update before going live:** the canonical/OG/sitemap URLs in [`index.html`](index.html), [`public/sitemap.xml`](public/sitemap.xml), and [`public/robots.txt`](public/robots.txt) use `https://pavangunnam.vercel.app/` as a placeholder. Change them to your real production domain.

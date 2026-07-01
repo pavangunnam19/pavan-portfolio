@@ -296,6 +296,19 @@ export const certificationGroups: CertificationGroup[] = [
     ],
   },
   {
+    provider: 'Anthropic',
+    items: [
+      {
+        name: 'Claude 101',
+        url: 'https://verify.skilljar.com/c/opeedx2engzr',
+      },
+      {
+        name: 'AI Fluency',
+        url: 'https://verify.skilljar.com/c/9tqb8kzvrug2',
+      },
+    ],
+  },
+  {
     provider: 'AI & LLMs',
     items: [
       {

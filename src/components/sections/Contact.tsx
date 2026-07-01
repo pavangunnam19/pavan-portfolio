@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import emailjs from 'emailjs-com'
 import { AlertCircle, CheckCircle2, Loader2, Send } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { profile, socials } from '@/data/resume'
@@ -9,10 +8,10 @@ import { Section } from '@/components/ui/Section'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { SocialIcon } from '@/components/common/icons'
 
-const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
-const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
-const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-const emailjsConfigured = Boolean(SERVICE_ID && TEMPLATE_ID && PUBLIC_KEY)
+// Free, no-dashboard email delivery via Web3Forms (https://web3forms.com).
+// The access key is public by design (safe to expose in client code).
+const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY
+const emailConfigured = Boolean(WEB3FORMS_KEY)
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
@@ -46,6 +45,8 @@ export function Contact() {
     Partial<Record<keyof FormValues, string>>
   >({})
   const [status, setStatus] = useState<Status>('idle')
+  // Honeypot: bots fill hidden fields; humans never see this one.
+  const [honeypot, setHoneypot] = useState('')
 
   function update<K extends keyof FormValues>(key: K, value: string) {
     setValues((v) => ({ ...v, [key]: value }))
@@ -54,12 +55,15 @@ export function Contact() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    // Silently drop spam without surfacing anything to the bot.
+    if (honeypot) return
+
     const found = validate(values)
     setErrors(found)
     if (Object.keys(found).length > 0) return
 
-    // Graceful fallback when EmailJS isn't configured.
-    if (!emailjsConfigured) {
+    // Graceful fallback when the form service isn't configured yet.
+    if (!emailConfigured) {
       window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent(
         `Portfolio message from ${values.name}`,
       )}&body=${encodeURIComponent(`${values.message}\n\n— ${values.name} (${values.email})`)}`
@@ -68,19 +72,30 @@ export function Contact() {
 
     setStatus('sending')
     try {
-      await emailjs.send(
-        SERVICE_ID as string,
-        TEMPLATE_ID as string,
-        {
-          user_name: values.name,
-          user_email: values.email,
-          message: values.message,
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
-        PUBLIC_KEY as string,
-      )
-      setStatus('success')
-      setValues({ name: '', email: '', message: '' })
-      setTimeout(() => setStatus('idle'), 5000)
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `New portfolio message from ${values.name}`,
+          from_name: `${profile.shortName} Portfolio`,
+          name: values.name,
+          email: values.email,
+          message: values.message,
+        }),
+      })
+      const data = (await res.json()) as { success?: boolean }
+      if (data.success) {
+        setStatus('success')
+        setValues({ name: '', email: '', message: '' })
+        setTimeout(() => setStatus('idle'), 5000)
+      } else {
+        setStatus('error')
+        setTimeout(() => setStatus('idle'), 5000)
+      }
     } catch {
       setStatus('error')
       setTimeout(() => setStatus('idle'), 5000)
@@ -139,6 +154,17 @@ export function Contact() {
             noValidate
             className="glass rounded-2xl p-6 lg:col-span-3"
           >
+            {/* Honeypot — hidden from users, catches bots */}
+            <input
+              type="text"
+              name="botcheck"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              className="absolute left-[-9999px] h-0 w-0 opacity-0"
+            />
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="name" className="mb-1.5 block text-sm text-muted">
