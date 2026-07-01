@@ -9,8 +9,11 @@ import { SectionHeading } from '@/components/ui/SectionHeading'
 import { SocialIcon } from '@/components/common/icons'
 
 // Free, no-dashboard email delivery via Web3Forms (https://web3forms.com).
-// The access key is public by design (safe to expose in client code).
-const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY
+// The access key is public by design (it only permits sending to the inbox it
+// was registered with), so it's safe to embed in client code. Overridable via
+// env for local/CI without touching source.
+const WEB3FORMS_KEY =
+  import.meta.env.VITE_WEB3FORMS_KEY || '65dd9f5c-be1a-408f-9593-024016711f00'
 const emailConfigured = Boolean(WEB3FORMS_KEY)
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
